@@ -1,0 +1,130 @@
+﻿@using Bestellservice4.Shared.Transfer
+@using Microsoft.AspNetCore.Authorization
+@using Newtonsoft.Json
+
+@page "/dishes/createEdit"
+@page "/dishes/createEdit/{id:int}"
+@inject HttpClient Http
+@inject NavigationManager NavManager
+@attribute [Authorize(Roles = "Admin")]
+
+
+@if (Id.HasValue)
+{
+    <h3>@Dish.Title bearbeiten</h3>
+}
+else
+{
+    <h3>Speisen erstellen</h3>
+}
+
+<SfToast Title="Fertig!" Content="@ToastContent" Timeout="5000" CssClass="bg-success" ShowCloseButton="true" @ref="Toast">
+    <ToastPosition X="Right" Y="Top"></ToastPosition>
+    <ToastButtons>
+        <ToastButton Content="zur Liste" OnClick="@NavDiplay"></ToastButton>
+    </ToastButtons>
+</SfToast>
+
+<EditForm Model="Dish" OnValidSubmit="() => AddEditDish()">
+    <DataAnnotationsValidator></DataAnnotationsValidator>
+    <div class="mb-2">
+        <InputLabel For="@(() => Dish.Title)" />
+        <InputText class="form-control" @bind-Value="Dish.Title"></InputText>
+        <ValidationMessage For="() => Dish.Title"></ValidationMessage>
+    </div>
+    <div class="mb-2">
+        <InputLabel For="@(() => Dish.Description)" />
+        <InputTextArea class="form-control" style="min-height: 100px" @bind-Value="Dish.Description"></InputTextArea>
+        <ValidationMessage For="() => Dish.Description"></ValidationMessage>
+    </div>
+    <div class="mb-2">
+        <label>Preis:</label>
+        <InputNumber class="form-control" @bind-Value="Dish.Price"></InputNumber>
+        <ValidationMessage For="() => Dish.Price"></ValidationMessage>
+    </div>
+    <div class="mb-2">
+        <label>Bild:</label>
+        <SfUploader AutoUpload="true" AllowMultiple="false">
+            <UploaderEvents ValueChange="AddImage"></UploaderEvents>
+        </SfUploader>
+        <ValidationMessage For="() => Dish.ImageData"></ValidationMessage>
+        @if (ImageString != null && ImageString != "")
+        {
+            <img style="max-width: 200px" src="@ImageString" />
+        }
+    </div>
+    <button class="btn btn-primary mt-2" type="submit">@SubmitText</button>
+    <button class="btn btn-secondary mt-2" @onclick="() => NavDiplay()">Zurück</button>
+</EditForm>
+
+
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+    private string SubmitText = "Erstellen";
+
+    private DishDto Dish { get; set; } = new DishDto();
+    private string? ImageString;
+
+    private SfToast Toast = new SfToast();
+    private string? ToastContent;
+
+    protected override async void OnParametersSet()
+    {
+        if (Id.HasValue)
+        {
+            Dish = await Http.GetFromJsonAsync<DishDto>($"/data/dishes/{Id}") ?? new DishDto();
+            SubmitText = "Bearbeiten";
+        }
+        StateHasChanged();
+    }
+
+    public async void AddEditDish()
+    {
+        HttpResponseMessage response;
+        if (Id.HasValue)
+        {
+            response = await Http.PutAsJsonAsync<DishDto>("/data/dishes/update", Dish);
+        }
+        else
+        {
+            response = await Http.PostAsJsonAsync<DishDto>("/data/dishes/add", Dish);
+        }
+
+
+        if (response.IsSuccessStatusCode)
+        {
+            var dish = JsonConvert.DeserializeObject<DishDto>(await response.Content.ReadAsStringAsync());
+
+            if (Id.HasValue)
+            {
+                Dish = dish;
+                ToastContent = dish.Title + " wurde bearbeitet";
+            }
+            else
+            {
+                Dish = new DishDto();
+                ToastContent = dish.Title + " wurde angelegt";
+            }
+
+            ImageString = null;
+            StateHasChanged();
+            await this.Toast.ShowAsync();
+        }
+    }
+
+    public void AddImage(UploadChangeEventArgs uploadSfChangeEvent)
+    {
+        var file = uploadSfChangeEvent.Files.First();
+        byte[] bytes = file.Stream.ToArray();
+        Dish.ImageData = bytes;
+        ImageString = $"data:image/png;base64,{Convert.ToBase64String(bytes)}";
+        StateHasChanged();
+    }
+
+    private void NavDiplay()
+    {
+        NavManager.NavigateTo("/dishes/display");
+    }
+}

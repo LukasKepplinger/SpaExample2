@@ -1,0 +1,46 @@
+﻿@page "/dishes/single/{id:int}"
+@using Bestellservice4.Shared.Transfer
+@using Microsoft.AspNetCore.Authorization
+@inject HttpClient Http
+@inject NavigationManager NavManager
+@attribute [Authorize(Roles = "Customer, Company, Admin")]
+
+@if (Dish != null)
+{
+    <h3>@Dish.Title Allergene:</h3>
+
+    <table class="table table-dark table-hover table-striped bg-opacity-50">
+        <thead>
+            <tr>
+                <td>Allergen</td>
+                <td>Bezeichnung</td>
+                <td>Beschreibung</td>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var allergen in Dish.Allergens)
+            {
+                <tr>
+                    <td>@allergen.Letter</td>
+                    <td>@allergen.Title</td>
+                    <td>@allergen.Description</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    public DishDto? Dish { get; set; }
+
+    protected override async void OnInitialized()
+    {
+        Dish = await Http.GetFromJsonAsync<DishDto>($"/data/dishes/{Id}");
+        if (Dish == null)
+            NavManager.NavigateTo("/dishes/display");
+        StateHasChanged();
+    }
+}
