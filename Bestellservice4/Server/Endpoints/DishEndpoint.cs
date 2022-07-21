@@ -37,7 +37,7 @@ namespace Bestellservice4.Server.Endpoints
 
 
         [ProducesResponseType(200, Type = typeof(PageOf<DishDto>))]
-        //[Authorize(Roles = "Customer, Company, Admin")]
+        [Authorize(Roles = "Customer, Company, Admin")]
         internal async Task<IResult> GetPage(IDishService dishService, HttpResponse response,
             [FromQuery(Name = "page-current")] int currentPage,
             [FromQuery(Name = "page-size")] int pageSize)
