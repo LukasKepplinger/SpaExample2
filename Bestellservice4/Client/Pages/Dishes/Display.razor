@@ -52,42 +52,53 @@
     </div>
 }
 
-
-@if (MetaData != null)
-{
-    <div class="btn-group">
-        @if (MetaData.HasPrevious)
-        {
-            <button class="btn btn-light" @onclick="() => GetDishesPage(MetaData.CurrentPage - 1, 2)">Prev</button>
-        }
-        @for (var i = 1; i <= MetaData.TotalPages; i++)
-        {
-            var local_i = i;
-            @if (MetaData.CurrentPage == i)
-            {           
-                <button class="btn btn-primary" @onclick="() => GetDishesPage(local_i, 2)">@i</button>
+<div class="row">
+    <div class="col-auto">
+        <div class="btn-group">
+            @if (MetaData.HasPrevious)
+            {
+                <button class="btn btn-primary" @onclick="() => GetDishesPage(MetaData.CurrentPage - 1, MetaData.PageSize)">Prev</button>
             }
             else
             {
-                <button class="btn btn-light" @onclick="() => GetDishesPage(local_i, 2)">@i</button>
+                <button class="btn btn-primary disabled">Prev</button>
             }
-        }
-         @if (MetaData.HasNext)
-        {
-            <button class="btn btn-light" @onclick="() => GetDishesPage(MetaData.CurrentPage + 1, 2)">Next</button>
-        }
+            @for (var i = 1; i <= MetaData.TotalPages; i++)
+            {
+                var local_i = i;
+                @if (MetaData.CurrentPage == i)
+                {
+                    <button class="btn btn-primary" @onclick="() => GetDishesPage(local_i, MetaData.PageSize)">@i</button>
+                }
+                else
+                {
+                    <button class="btn btn-light" @onclick="() => GetDishesPage(local_i, MetaData.PageSize)">@i</button>
+                }
+            }
+            @if (MetaData.HasNext)
+            {
+                <button class="btn btn-primary" @onclick="() => GetDishesPage(MetaData.CurrentPage + 1, MetaData.PageSize)">Next</button>
+            }
+            else
+            {
+                <button class="btn btn-primary disabled">Next</button>
+            }
+        </div>
     </div>
-    <EditForm Model="MetaData">
-        <InputNumber class="form-control" @bind-Value="MetaData.PageSize"></InputNumber>
-    </EditForm>
-}
+    <div class="col-auto">
+        <EditForm Model="MetaData">
+            <InputNumber class="form-control" @bind-Value="MetaData.PageSize"></InputNumber>
+        </EditForm>
+    </div>
+</div>
+
 
 
 
 
 @code {
     private List<DishDto>? Dishes { get; set; }
-    public PageMetaData? MetaData { get; set; }
+    public PageMetaData MetaData { get; set; } = new PageMetaData() { CurrentPage = 1, PageSize = 3 };
     private string? ImageString;
     private bool isAdmin;
     public string IsDisabled
@@ -109,7 +120,7 @@
             isAdmin = true;
         }
 
-        await GetDishesPage(1, 2);
+        await GetDishesPage(MetaData.CurrentPage, MetaData.PageSize);
         //Dishes = await Http.GetFromJsonAsync<List<DishDto>>("/data/dishes/all") ?? new List<DishDto>();
         //StateHasChanged();
     }
