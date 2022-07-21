@@ -57,7 +57,7 @@
         <div class="btn-group">
             @if (MetaData.HasPrevious)
             {
-                <button class="btn btn-primary" @onclick="() => GetDishesPage(MetaData.CurrentPage - 1, MetaData.PageSize)">Prev</button>
+                <button class="btn btn-primary" @onclick="() => GetDishesPage(MetaData.CurrentPage - 1)">Prev</button>
             }
             else
             {
@@ -68,16 +68,16 @@
                 var local_i = i;
                 @if (MetaData.CurrentPage == i)
                 {
-                    <button class="btn btn-primary" @onclick="() => GetDishesPage(local_i, MetaData.PageSize)">@i</button>
+                    <button class="btn btn-primary" @onclick="() => GetDishesPage(local_i)">@i</button>
                 }
                 else
                 {
-                    <button class="btn btn-light" @onclick="() => GetDishesPage(local_i, MetaData.PageSize)">@i</button>
+                    <button class="btn btn-light" @onclick="() => GetDishesPage(local_i)">@i</button>
                 }
             }
             @if (MetaData.HasNext)
             {
-                <button class="btn btn-primary" @onclick="() => GetDishesPage(MetaData.CurrentPage + 1, MetaData.PageSize)">Next</button>
+                <button class="btn btn-primary" @onclick="() => GetDishesPage(MetaData.CurrentPage + 1)">Next</button>
             }
             else
             {
@@ -87,7 +87,14 @@
     </div>
     <div class="col-auto">
         <EditForm Model="MetaData">
-            <InputNumber class="form-control" @bind-Value="MetaData.PageSize"></InputNumber>
+            <InputSelect class="form-control" @bind-Value="MetaData.PageSize">
+               <option value="2">2</option>
+               <option value="5">5</option>
+               <option value="10">10</option>
+               <option value="20">20</option>
+               <option value="50">50</option>
+               <option value="100">100</option>
+            </InputSelect>
         </EditForm>
     </div>
 </div>
@@ -98,7 +105,7 @@
 
 @code {
     private List<DishDto>? Dishes { get; set; }
-    public PageMetaData MetaData { get; set; } = new PageMetaData() { CurrentPage = 1, PageSize = 3 };
+    public PageMetaData MetaData { get; set; } = new PageMetaData() { CurrentPage = 1, PageSize = 2 };
     private string? ImageString;
     private bool isAdmin;
     public string IsDisabled
@@ -120,17 +127,17 @@
             isAdmin = true;
         }
 
-        await GetDishesPage(MetaData.CurrentPage, MetaData.PageSize);
+        await GetDishesPage(MetaData.CurrentPage);
         //Dishes = await Http.GetFromJsonAsync<List<DishDto>>("/data/dishes/all") ?? new List<DishDto>();
         //StateHasChanged();
     }
 
-    public async Task GetDishesPage(int page, int size)
+    public async Task GetDishesPage(int page)
     {
         var queryStringParams = new Dictionary<string, string>()
             {
                 ["page-current"] = page.ToString(),
-                ["page-size"] = size.ToString()
+                ["page-size"] = MetaData.PageSize.ToString()
             };
 
         var response = await Http.GetAsync(QueryHelpers.AddQueryString("/data/dishes/page", queryStringParams));
