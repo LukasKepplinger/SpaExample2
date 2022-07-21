@@ -1,6 +1,7 @@
 ﻿
 using Bestellservice4.Services.IServices;
 using Bestellservice4.Services.Models;
+using Bestellservice4.Shared.Helper;
 using Bestellservice4.Shared.Params;
 using Bestellservice4.Shared.Transfer;
 using Microsoft.AspNetCore.Http;
@@ -24,10 +25,11 @@ namespace Bestellservice4.Services.Services
             this.context = context;
         }
 
-        public async Task<List<DishDto>> GetAllAsync(string? title = null) //simple search parameter
+        public async Task<List<DishDto>?> GetAllAsync(string? title = null) //simple search parameter
         {
             var dishes = Dishes.AsNoTracking()
                 .Include(dish => dish.Allergens)
+                .OrderBy(dish => dish.Created)
                 .Select(dish => new DishDto
                 {
                     Id = dish.Id,
@@ -48,7 +50,41 @@ namespace Bestellservice4.Services.Services
             if (!string.IsNullOrEmpty(title))
                 dishes = dishes.Where(dish => dish.Title.Contains(title));
 
+            if (!dishes.Any())
+                return null;
+
             return await dishes.ToListAsync();
+        }
+
+        public async Task<PageOf<DishDto>?> GetPageAsync(PageParams parameters)
+        {
+            var dishes = Dishes.AsNoTracking()
+                .Include(dish => dish.Allergens)
+                .OrderBy(dish => dish.Created)
+                .Select(dish => new DishDto
+                {
+                    Id = dish.Id,
+                    Title = dish.Title,
+                    Description = dish.Description,
+                    Created = dish.Created,
+                    Price = dish.Price,
+                    ImageData = dish.ImageData,
+                    Allergens = dish.Allergens.Select(dishAllergen => new AllergenDto
+                    {
+                        Id = dishAllergen.Id,
+                        Letter = dishAllergen.Letter,
+                        Title = dishAllergen.Title,
+                        Description = dishAllergen.Description
+                    }).ToList()
+                }).AsQueryable();
+
+            //if (!string.IsNullOrEmpty(parameters.Title))
+            //    dishes = dishes.Where(dish => dish.Title.Contains(parameters.Title));
+
+            if (!dishes.Any())
+                return null;
+
+            return await PageOf<DishDto>.ToPagesAsync(dishes, parameters.CurrentPage, parameters.PageSize);
         }
 
         public async Task<DishDto?> GetAsync(int id)
@@ -73,32 +109,6 @@ namespace Bestellservice4.Services.Services
                 }).FirstOrDefaultAsync(dish => dish.Id == id);
         }
 
-        public async Task<List<DishDto>> GetAsync(DishParams parameters) //Paging
-        {
-            var dishes = Dishes.AsNoTracking()
-               .OrderBy(dish => dish.Created)
-               .Skip((parameters.CurrentPage - 1) * parameters.PageSize)
-               .Take(parameters.PageSize)
-               .Include(dish => dish.Allergens)
-               .Select(dish => new DishDto
-               {
-                   Id = dish.Id,
-                   Title = dish.Title,
-                   Description = dish.Description,
-                   Created = dish.Created,
-                   Price = dish.Price,
-                   ImageData = dish.ImageData,
-                   Allergens = dish.Allergens.Select(dishAllergen => new AllergenDto
-                   {
-                       Id = dishAllergen.Id,
-                       Letter = dishAllergen.Letter,
-                       Title = dishAllergen.Title,
-                       Description = dishAllergen.Description
-                   }).ToList()
-               }).AsQueryable();
-
-            return await dishes.ToListAsync();
-        }
 
         public async Task<DishDto> InsertAsync(DishDto dishDto)
         {
@@ -120,9 +130,6 @@ namespace Bestellservice4.Services.Services
 
         public async Task<DishDto?> UpdateAsync(DishDto dishDto)
         {
-            //if (await Dishes.FindAsync(dishDto.Id) == null)
-            //    return null;
-
             var dish = new Dish
             {
                 Id = dishDto.Id,

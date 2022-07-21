@@ -44,7 +44,7 @@ else
     </div>
     <div class="mb-2">
         <label>Bild:</label>
-        <SfUploader AutoUpload="true" AllowMultiple="false">
+        <SfUploader AllowedExtensions=".jpg, .png" AutoUpload="true" AllowMultiple="false">
             <UploaderEvents ValueChange="AddImage"></UploaderEvents>
         </SfUploader>
         <ValidationMessage For="() => Dish.ImageData"></ValidationMessage>
@@ -92,11 +92,9 @@ else
             response = await Http.PostAsJsonAsync<DishDto>("/data/dishes/add", Dish);
         }
 
-
         if (response.IsSuccessStatusCode)
         {
             var dish = JsonConvert.DeserializeObject<DishDto>(await response.Content.ReadAsStringAsync());
-
             if (Id.HasValue)
             {
                 Dish = dish;
@@ -107,7 +105,6 @@ else
                 Dish = new DishDto();
                 ToastContent = dish.Title + " wurde angelegt";
             }
-
             ImageString = null;
             StateHasChanged();
             await this.Toast.ShowAsync();

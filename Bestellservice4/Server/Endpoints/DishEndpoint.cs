@@ -1,10 +1,13 @@
 ﻿using Bestellservice4.Services;
 using Bestellservice4.Services.IServices;
 using Bestellservice4.Services.Services;
+using Bestellservice4.Shared.Helper;
+using Bestellservice4.Shared.Params;
 using Bestellservice4.Shared.Transfer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MiniValidation;
+using Newtonsoft.Json;
 
 namespace Bestellservice4.Server.Endpoints
 {
@@ -15,17 +18,48 @@ namespace Bestellservice4.Server.Endpoints
         {
             app.MapGet("/data/dishes/test", () => "the dishes endpoint is responding");
             app.MapGet("/data/dishes/all", GetAll);
+            app.MapGet("/data/dishes/page", /*(PageParams pageParams) => */GetPage);
             app.MapGet("/data/dishes/{id}", GetById);
             app.MapPost("/data/dishes/add", Add);
             app.MapPut("/data/dishes/update", Update);
             app.MapDelete("/data/dishes/{id}", Delete);
         }
 
-        [Authorize(Roles = "Customer, Company, Admin")]
-        internal async Task<List<DishDto>> GetAll(IDishService dishService)
+
+        [Authorize(Roles = "Admin")]
+        internal async Task<IResult> GetAll(IDishService dishService)
         {
-            return await dishService.GetAllAsync();
+            var dishes = await dishService.GetAllAsync();
+            if (dishes == null)
+                return Results.NotFound();
+            return Results.Ok(dishes);
         }
+
+
+        [ProducesResponseType(200, Type = typeof(PageOf<DishDto>))]
+        //[Authorize(Roles = "Customer, Company, Admin")]
+        internal async Task<IResult> GetPage(IDishService dishService, HttpResponse response,
+            [FromQuery(Name = "page-current")] int currentPage,
+            [FromQuery(Name = "page-size")] int pageSize)
+        {
+            PageParams pageParams = new PageParams()
+            {
+                CurrentPage = currentPage,
+                PageSize = pageSize
+            };
+
+            if (MiniValidator.TryValidate(pageParams, out var errors))
+            {
+                var dishPage = await dishService.GetPageAsync(pageParams);
+                if (dishPage == null)
+                    return Results.NotFound();
+
+                response.Headers.Add("Page-Metadata", JsonConvert.SerializeObject(dishPage.PageMetaData));
+                return Results.Ok(dishPage);
+            }
+            return Results.ValidationProblem(errors);
+        }
+
 
         [ProducesResponseType(200, Type = typeof(DishDto))]
         [Authorize(Roles = "Customer, Company, Admin")]
@@ -36,6 +70,7 @@ namespace Bestellservice4.Server.Endpoints
             if (dishDto == null) return Results.NotFound();
             return Results.Ok(dishDto);
         }
+
 
         [Authorize(Roles = "Admin")]
         internal async Task<IResult> Add(IDishService dishService, DishDto dishDto)
@@ -49,6 +84,7 @@ namespace Bestellservice4.Server.Endpoints
             return Results.ValidationProblem(errors);
         }
 
+
         [Authorize(Roles = "Admin")]
         internal async Task<IResult> Update(IDishService dishService, DishDto? dishDto)
         {
@@ -59,6 +95,7 @@ namespace Bestellservice4.Server.Endpoints
             }
             return Results.ValidationProblem(errors);
         }
+
 
         [ProducesResponseType(200, Type = typeof(DishDto))]
         [Authorize(Roles = "Admin")]
