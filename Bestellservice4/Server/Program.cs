@@ -104,6 +104,7 @@ namespace Bestellservice4
             app.UseEndpointDefinitions();
             app.MapFallbackToFile("index.html");
 
+
             var scope = app.Services.CreateScope();
             var serviceProvider = scope.ServiceProvider;
             CreateRoles(serviceProvider).Wait();

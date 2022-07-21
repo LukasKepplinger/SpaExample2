@@ -1,11 +1,14 @@
-﻿@using Bestellservice4.Shared.Transfer
+﻿@using Bestellservice4.Shared.Helper
+@using Bestellservice4.Shared.Transfer
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.WebUtilities
 @using Newtonsoft.Json
 @page "/dishes/display"
 @inject HttpClient Http
 @inject NavigationManager NavManager
 @inject AuthenticationStateProvider authStateProvider
 @attribute [Authorize(Roles = "Customer, Company, Admin")]
+
 
 <h3>Speisen</h3>
 <AuthorizeView Roles="Admin">
@@ -39,7 +42,6 @@
                         {
                             <p>@allergen.Letter</p>
                         }
-
                         <button class="btn btn-warning mb-0 mt-2 @IsDisabled" @onclick="() => NavEdit(dish.Id)">Bearbeiten</button>
                         <button class="btn btn-danger mb-0 mt-2 @IsDisabled" @onclick="() => DeleteDish(dish.Id)">Löschen</button>
                         <button class="btn btn-primary mb-0 mt-2" @onclick="() => NavSingle(dish.Id)">Details</button>
@@ -51,11 +53,44 @@
 }
 
 
+@if (MetaData != null)
+{
+    <div class="btn-group">
+        @if (MetaData.HasPrevious)
+        {
+            <button class="btn btn-light" @onclick="() => GetDishesPage(MetaData.CurrentPage - 1, 2)">Prev</button>
+        }
+        @for (var i = 1; i <= MetaData.TotalPages; i++)
+        {
+            var local_i = i;
+            @if (MetaData.CurrentPage == i)
+            {           
+                <button class="btn btn-primary" @onclick="() => GetDishesPage(local_i, 2)">@i</button>
+            }
+            else
+            {
+                <button class="btn btn-light" @onclick="() => GetDishesPage(local_i, 2)">@i</button>
+            }
+        }
+         @if (MetaData.HasNext)
+        {
+            <button class="btn btn-light" @onclick="() => GetDishesPage(MetaData.CurrentPage + 1, 2)">Next</button>
+        }
+    </div>
+    <EditForm Model="MetaData">
+        <InputNumber class="form-control" @bind-Value="MetaData.PageSize"></InputNumber>
+    </EditForm>
+}
+
+
+
+
 @code {
-    private List<DishDto> Dishes { get; set; }
+    private List<DishDto>? Dishes { get; set; }
+    public PageMetaData? MetaData { get; set; }
     private string? ImageString;
     private bool isAdmin;
-    public string IsDisabled 
+    public string IsDisabled
     {
         get
         {
@@ -74,7 +109,27 @@
             isAdmin = true;
         }
 
-        Dishes = await Http.GetFromJsonAsync<List<DishDto>>("/data/dishes/all") ?? new List<DishDto>();
+        await GetDishesPage(1, 2);
+        //Dishes = await Http.GetFromJsonAsync<List<DishDto>>("/data/dishes/all") ?? new List<DishDto>();
+        //StateHasChanged();
+    }
+
+    public async Task GetDishesPage(int page, int size)
+    {
+        var queryStringParams = new Dictionary<string, string>()
+            {
+                ["page-current"] = page.ToString(),
+                ["page-size"] = size.ToString()
+            };
+
+        var response = await Http.GetAsync(QueryHelpers.AddQueryString("/data/dishes/page", queryStringParams));
+        var responseString = await response.Content.ReadAsStringAsync();
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new HttpRequestException();
+        }
+        Dishes = JsonConvert.DeserializeObject<List<DishDto>>(responseString);
+        MetaData = JsonConvert.DeserializeObject<PageMetaData>(response.Headers.GetValues("Page-Metadata").First());
         StateHasChanged();
     }
 
