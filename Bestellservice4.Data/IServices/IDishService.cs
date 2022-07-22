@@ -9,11 +9,11 @@ namespace Bestellservice4.Services.IServices
 {
     public interface IDishService
     {
-        Task<DishDto?> DeleteAsync(int id);
         Task<List<DishDto>?> GetAllAsync(string? title = null);
         Task<PageOf<DishDto>?> GetPageAsync(PageParams parameters);
         Task<DishDto?> GetAsync(int id);
-        Task<DishDto> InsertAsync(DishDto dishDto);
-        Task<DishDto?> UpdateAsync(DishDto dishDto);
+        Task<DishCeDto> InsertAsync(DishCeDto dishDto);
+        Task<DishCeDto?> UpdateAsync(DishCeDto dishDto);
+        Task<DishCeDto?> DeleteAsync(int id);
     }
 }

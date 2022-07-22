@@ -27,7 +27,7 @@
     <div class="row row-cols-1 row-cols-md-5">
         @foreach (var dish in Dishes)
         {
-            <div class="col">
+            <div class="col" style="min-width: 500px">
                 <div class="card mb-3">
                     @if (dish.ImageData != null)
                     {
@@ -87,19 +87,20 @@
     </div>
     <div class="col-auto">
         <EditForm Model="MetaData">
-            <InputSelect class="form-control" @bind-Value="MetaData.PageSize">
-               <option value="2">2</option>
-               <option value="5">5</option>
-               <option value="10">10</option>
-               <option value="20">20</option>
-               <option value="50">50</option>
-               <option value="100">100</option>
-            </InputSelect>
+            <div class="input-group">
+                <InputSelect class="form-control" @bind-Value="MetaData.PageSize">
+                    <option value="2">2</option>
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                </InputSelect>
+                <button class="btn btn-primary" @onclick="() => GetDishesPage(1)">Anwenden</button>
+            </div>
         </EditForm>
     </div>
 </div>
 
-
+<div class="mb-xl-4"></div>
 
 
 
@@ -122,10 +123,9 @@
 
     protected override async void OnInitialized()
     {
-        if (authStateProvider.GetAuthenticationStateAsync().Result.User.IsInRole("Admin"))
-        {
-            isAdmin = true;
-        }
+        var authState = await authStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.IsInRole("Admin"))
+            isAdmin = true;    
 
         await GetDishesPage(MetaData.CurrentPage);
         //Dishes = await Http.GetFromJsonAsync<List<DishDto>>("/data/dishes/all") ?? new List<DishDto>();
@@ -142,6 +142,7 @@
 
         var response = await Http.GetAsync(QueryHelpers.AddQueryString("/data/dishes/page", queryStringParams));
         var responseString = await response.Content.ReadAsStringAsync();
+
         if (!response.IsSuccessStatusCode)
         {
             throw new HttpRequestException();

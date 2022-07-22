@@ -51,10 +51,11 @@ namespace Bestellservice4.Server.Endpoints
             if (MiniValidator.TryValidate(pageParams, out var errors))
             {
                 var dishPage = await dishService.GetPageAsync(pageParams);
-                if (dishPage == null)
-                    return Results.NotFound();
-
                 response.Headers.Add("Page-Metadata", JsonConvert.SerializeObject(dishPage.PageMetaData));
+
+                if (dishPage == null)
+                    return Results.NoContent();
+                
                 return Results.Ok(dishPage);
             }
             return Results.ValidationProblem(errors);
@@ -73,7 +74,7 @@ namespace Bestellservice4.Server.Endpoints
 
 
         [Authorize(Roles = "Admin")]
-        internal async Task<IResult> Add(IDishService dishService, DishDto dishDto)
+        internal async Task<IResult> Add(IDishService dishService, DishCeDto dishDto)
         {
             dishDto.Created = DateTime.Now;
             if (MiniValidator.TryValidate(dishDto, out var errors))
@@ -86,7 +87,7 @@ namespace Bestellservice4.Server.Endpoints
 
 
         [Authorize(Roles = "Admin")]
-        internal async Task<IResult> Update(IDishService dishService, DishDto? dishDto)
+        internal async Task<IResult> Update(IDishService dishService, DishCeDto? dishDto)
         {
             if (MiniValidator.TryValidate(dishDto, out var errors))
             {
@@ -97,7 +98,7 @@ namespace Bestellservice4.Server.Endpoints
         }
 
 
-        [ProducesResponseType(200, Type = typeof(DishDto))]
+        [ProducesResponseType(200, Type = typeof(DishCeDto))]
         [Authorize(Roles = "Admin")]
         internal async Task<IResult> Delete(IDishService dishService, int? id)
         {

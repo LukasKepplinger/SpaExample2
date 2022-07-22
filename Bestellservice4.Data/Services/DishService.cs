@@ -81,8 +81,8 @@ namespace Bestellservice4.Services.Services
             //if (!string.IsNullOrEmpty(parameters.Title))
             //    dishes = dishes.Where(dish => dish.Title.Contains(parameters.Title));
 
-            if (!dishes.Any())
-                return null;
+            //if (!dishes.Any())
+            //    return null;
 
             return await PageOf<DishDto>.ToPagesAsync(dishes, parameters.CurrentPage, parameters.PageSize);
         }
@@ -110,7 +110,7 @@ namespace Bestellservice4.Services.Services
         }
 
 
-        public async Task<DishDto> InsertAsync(DishDto dishDto)
+        public async Task<DishCeDto> InsertAsync(DishCeDto dishDto)
         {
             var dish = new Dish
             {
@@ -128,7 +128,7 @@ namespace Bestellservice4.Services.Services
             return dishDto;
         }
 
-        public async Task<DishDto?> UpdateAsync(DishDto dishDto)
+        public async Task<DishCeDto?> UpdateAsync(DishCeDto dishDto)
         {
             var dish = new Dish
             {
@@ -146,7 +146,7 @@ namespace Bestellservice4.Services.Services
             return dishDto;
         }
 
-        public async Task<DishDto?> DeleteAsync(int id)
+        public async Task<DishCeDto?> DeleteAsync(int id)
         {
             Dish? dish = await Dishes.FindAsync(id);
 
@@ -156,7 +156,7 @@ namespace Bestellservice4.Services.Services
             Dishes.Remove(dish);
             await context.SaveChangesAsync();
 
-            return new DishDto
+            return new DishCeDto
             {
                 Id = dish.Id,
                 Title = dish.Title,

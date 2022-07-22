@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Bestellservice4.Services.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20220719065530_mig")]
-    partial class mig
+    [Migration("20220722063117_mig1")]
+    partial class mig1
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
