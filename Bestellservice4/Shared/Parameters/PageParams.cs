@@ -24,7 +24,7 @@ namespace Bestellservice4.Shared.Params
             get { return pageSize; }
             set 
             {
-                if (value < maxPageSize && value > 0)
+                if (value <= maxPageSize && value > 0)
                     pageSize = value;
                 else
                     pageSize = 10;
