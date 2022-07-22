@@ -37,11 +37,16 @@
                     <div class="card-body bg-light">
                         <h3 class="mb-0">@dish.Title</h3>
                         <p class="small mt-0">Erstellt am: @dish.Created</p>
-                        <p class="mt-3">@dish.Description</p>
-                        @foreach (var allergen in dish.Allergens)
-                        {
-                            <p>@allergen.Letter</p>
-                        }
+                        <p class="mt-3 mb-0">@dish.Description</p>
+                        <p>
+                             <span class="d-print-inline mt-0 mb-0 text-nowrap">Allergene: </span>
+                            @foreach (var allergen in dish.Allergens)
+                            {
+                                <span class="d-print-inline mt-0 mb-0 text-nowrap">@allergen.Letter </span>
+                            }
+                        </p>
+                            
+
                         <button class="btn btn-warning mb-0 mt-2 @IsDisabled" @onclick="() => NavEdit(dish.Id)">Bearbeiten</button>
                         <button class="btn btn-danger mb-0 mt-2 @IsDisabled" @onclick="() => DeleteDish(dish.Id)">Löschen</button>
                         <button class="btn btn-primary mb-0 mt-2" @onclick="() => NavSingle(dish.Id)">Details</button>
@@ -125,7 +130,7 @@
     {
         var authState = await authStateProvider.GetAuthenticationStateAsync();
         if (authState.User.IsInRole("Admin"))
-            isAdmin = true;    
+            isAdmin = true;
 
         await GetDishesPage(MetaData.CurrentPage);
         //Dishes = await Http.GetFromJsonAsync<List<DishDto>>("/data/dishes/all") ?? new List<DishDto>();

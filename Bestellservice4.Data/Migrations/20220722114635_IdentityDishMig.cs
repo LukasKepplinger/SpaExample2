@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Bestellservice4.Services.Migrations
 {
-    public partial class mig1 : Migration
+    public partial class IdentityDishMig : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

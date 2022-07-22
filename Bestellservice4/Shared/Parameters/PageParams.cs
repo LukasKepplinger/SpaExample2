@@ -18,6 +18,7 @@ namespace Bestellservice4.Shared.Params
         private int pageSize = 10;
 
         [Required]
+        [Range(0, maxPageSize)]
         public int PageSize
         {
             get { return pageSize; }

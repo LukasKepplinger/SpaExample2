@@ -19,9 +19,10 @@ namespace Bestellservice4.Server
             //        .Select(Activator.CreateInstance).Cast<IEndpointDefinition>()
             //        );
             //}
-         
+            
             endpointDefinitions.Add(new DishEndpoint());
-          
+            endpointDefinitions.Add(new AllergenEndpoint());
+
 
             foreach (var endpointDefinition in endpointDefinitions)
             {

@@ -51,6 +51,8 @@ namespace Bestellservice4.Server.Endpoints
             if (MiniValidator.TryValidate(pageParams, out var errors))
             {
                 var dishPage = await dishService.GetPageAsync(pageParams);
+                if (dishPage == null)
+                    dishPage = new PageOf<DishDto>();
                 response.Headers.Add("Page-Metadata", JsonConvert.SerializeObject(dishPage.PageMetaData));
 
                 if (dishPage == null)

@@ -10,6 +10,17 @@ namespace Bestellservice4.Shared.Helper
     {
         public PageMetaData PageMetaData { get; set; }
 
+        public PageOf()
+        {
+            PageMetaData = new PageMetaData
+            {
+                CurrentPage = 1,
+                PageSize = 2,
+                TotalCount = 2,
+                TotalPages = 1
+            };
+        }
+
         public PageOf(List<T> dtos, int currentPage, int pageSize, int totalCount)
         {
             PageMetaData = new PageMetaData

@@ -12,6 +12,7 @@ namespace Bestellservice4.Services.Models
         public char Letter { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
+        public int DishId { get; set; }
         public Dish Dish { get; set; }
     }
 }

@@ -18,5 +18,16 @@ namespace Bestellservice4.Services
 
         public DbSet<Dish> Dishes { get; set; }
         public DbSet<Allergen> Allergens { get; set; }
+
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.Entity<Allergen>()
+                .HasOne(a => a.Dish)
+                .WithMany(d => d.Allergens);
+
+        }
     }
 }

@@ -135,6 +135,7 @@ namespace Bestellservice4.Services.Services
                 Id = dishDto.Id,
                 Title = dishDto.Title,
                 Description = dishDto.Description,
+                Created = dishDto.Created,
                 Price = dishDto.Price,
                 ImageData = dishDto.ImageData
             };
@@ -149,7 +150,6 @@ namespace Bestellservice4.Services.Services
         public async Task<DishCeDto?> DeleteAsync(int id)
         {
             Dish? dish = await Dishes.FindAsync(id);
-
             if (dish == null)
                 return null;
 

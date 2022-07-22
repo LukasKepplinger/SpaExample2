@@ -64,7 +64,7 @@ else
     public int? Id { get; set; }
     private string SubmitText = "Erstellen";
 
-    private DishDto Dish { get; set; } = new DishDto();
+    private DishCeDto Dish { get; set; } = new DishCeDto();
     private string? ImageString;
 
     private SfToast Toast = new SfToast();
@@ -74,7 +74,7 @@ else
     {
         if (Id.HasValue)
         {
-            Dish = await Http.GetFromJsonAsync<DishDto>($"/data/dishes/{Id}") ?? new DishDto();
+            Dish = await Http.GetFromJsonAsync<DishCeDto>($"/data/dishes/{Id}") ?? new DishCeDto();
             SubmitText = "Bearbeiten";
         }
         StateHasChanged();
@@ -85,16 +85,16 @@ else
         HttpResponseMessage response;
         if (Id.HasValue)
         {
-            response = await Http.PutAsJsonAsync<DishDto>("/data/dishes/update", Dish);
+            response = await Http.PutAsJsonAsync<DishCeDto>("/data/dishes/update", Dish);
         }
         else
         {
-            response = await Http.PostAsJsonAsync<DishDto>("/data/dishes/add", Dish);
+            response = await Http.PostAsJsonAsync<DishCeDto>("/data/dishes/add", Dish);
         }
 
         if (response.IsSuccessStatusCode)
         {
-            var dish = JsonConvert.DeserializeObject<DishDto>(await response.Content.ReadAsStringAsync());
+            var dish = JsonConvert.DeserializeObject<DishCeDto>(await response.Content.ReadAsStringAsync());
             if (Id.HasValue)
             {
                 Dish = dish;
@@ -102,7 +102,7 @@ else
             }
             else
             {
-                Dish = new DishDto();
+                Dish = new DishCeDto();
                 ToastContent = dish.Title + " wurde angelegt";
             }
             ImageString = null;
