@@ -31,7 +31,7 @@
     </table>
 }
 
-<AuthorizeView Roles="admin" Context="Authorization">
+<AuthorizeView Roles="Admin" Context="Authorization">
     <Authorized>
         <EditForm Model="Allergen" OnValidSubmit="() => AddAllergen()" Context="EditForm">
             <DataAnnotationsValidator></DataAnnotationsValidator>
