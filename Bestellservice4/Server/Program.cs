@@ -1,4 +1,5 @@
 using Bestellservice4.Server;
+using Bestellservice4.Server.Hubs;
 using Bestellservice4.Services;
 using Bestellservice4.Services.IServices;
 using Bestellservice4.Services.Models;
@@ -69,6 +70,7 @@ namespace Bestellservice4
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();
             builder.Services.AddEndpointDefinitions(typeof(Dish));
+            builder.Services.AddSignalR();
 
             var app = builder.Build();
 
@@ -102,6 +104,7 @@ namespace Bestellservice4
             app.MapRazorPages();
             app.MapControllers();
             app.UseEndpointDefinitions();
+            app.MapHub<NotificationHub>("/notification");
             app.MapFallbackToFile("index.html");
 
 

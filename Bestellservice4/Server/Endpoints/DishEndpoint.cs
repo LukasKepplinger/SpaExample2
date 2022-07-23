@@ -1,4 +1,5 @@
-﻿using Bestellservice4.Services;
+﻿using Bestellservice4.Server.Hubs;
+using Bestellservice4.Services;
 using Bestellservice4.Services.IServices;
 using Bestellservice4.Services.Services;
 using Bestellservice4.Shared.Helper;
@@ -6,6 +7,7 @@ using Bestellservice4.Shared.Params;
 using Bestellservice4.Shared.Transfer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using MiniValidation;
 using Newtonsoft.Json;
 
@@ -76,12 +78,13 @@ namespace Bestellservice4.Server.Endpoints
 
 
         [Authorize(Roles = "Admin")]
-        internal async Task<IResult> Add(IDishService dishService, DishCeDto dishDto)
+        internal async Task<IResult> Add(IDishService dishService, DishCeDto dishDto, IHubContext<NotificationHub> hubContext)
         {
             dishDto.Created = DateTime.Now;
             if (MiniValidator.TryValidate(dishDto, out var errors))
             {
                 await dishService.InsertAsync(dishDto);
+                await hubContext.Clients.All.SendAsync("NewDishNotification", dishDto.Id);
                 return Results.Ok(dishDto);
             }
             return Results.ValidationProblem(errors);

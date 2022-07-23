@@ -31,35 +31,39 @@
     </table>
 }
 
-<EditForm Model="Allergen" OnValidSubmit="() => AddAllergen()">
-    <DataAnnotationsValidator></DataAnnotationsValidator>
-    <ValidationSummary></ValidationSummary>
-    <div class="row">
-        <div class="col col-1">
-            <label>Bezeichner</label>
-            <InputSelect class="form-control" @bind-Value="Allergen.Letter">
-                @foreach (var letter in Letters)
-               {
-                   <option value="@letter">@letter</option>
-               }
-            </InputSelect>
-            <ValidationMessage For="() => Allergen.Letter"></ValidationMessage>
-        </div>
-        <div class="col col-2">
-            <InputLabel For="@(() => Allergen.Title)"></InputLabel>
-            <InputText class="form-control" @bind-Value="Allergen.Title"></InputText>
-            <ValidationMessage For="() => Allergen.Title"></ValidationMessage>
-        </div>
-        <div class="col col-8">
-            <InputLabel For="@(() => Allergen.Description)"></InputLabel>
-            <InputText class="form-control" @bind-Value="Allergen.Description"></InputText>
-            <ValidationMessage For="() => Allergen.Description"></ValidationMessage>
-        </div>
-        <div class="col col-1">
-            <button class="btn btn-primary mt-4" type="submit">Hinzufügen</button>
-        </div>
-    </div>
-</EditForm>
+<AuthorizeView Roles="admin" Context="Authorization">
+    <Authorized>
+        <EditForm Model="Allergen" OnValidSubmit="() => AddAllergen()" Context="EditForm">
+            <DataAnnotationsValidator></DataAnnotationsValidator>
+            <ValidationSummary></ValidationSummary>
+            <div class="row">
+                <div class="col col-1">
+                    <label>Bezeichner</label>
+                    <InputSelect class="form-control" @bind-Value="Allergen.Letter">
+                        @foreach (var letter in Letters)
+                        {
+                            <option value="@letter">@letter</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => Allergen.Letter"></ValidationMessage>
+                </div>
+                <div class="col col-2">
+                    <InputLabel For="@(() => Allergen.Title)"></InputLabel>
+                    <InputText class="form-control" @bind-Value="Allergen.Title"></InputText>
+                    <ValidationMessage For="() => Allergen.Title"></ValidationMessage>
+                </div>
+                <div class="col col-8">
+                    <InputLabel For="@(() => Allergen.Description)"></InputLabel>
+                    <InputText class="form-control" @bind-Value="Allergen.Description"></InputText>
+                    <ValidationMessage For="() => Allergen.Description"></ValidationMessage>
+                </div>
+                <div class="col col-1">
+                    <button class="btn btn-primary mt-4" type="submit">Hinzufügen</button>
+                </div>
+            </div>
+        </EditForm>
+    </Authorized>
+</AuthorizeView>
 
 
 @code {
@@ -82,7 +86,7 @@
     {
         Allergen.DishId = Dish.Id;
         var response = await Http.PostAsJsonAsync<AllergenDto>("/data/allergen/add", Allergen);
-        if(response.IsSuccessStatusCode)
+        if (response.IsSuccessStatusCode)
         {
             var allergen = JsonConvert.DeserializeObject<AllergenDto>(await response.Content.ReadAsStringAsync());
             Dish.Allergens.Add(allergen);

@@ -1,6 +1,7 @@
 ﻿@using Bestellservice4.Shared.Helper
 @using Bestellservice4.Shared.Transfer
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.SignalR.Client
 @using Microsoft.AspNetCore.WebUtilities
 @using Newtonsoft.Json
 @page "/dishes/display"
@@ -45,7 +46,6 @@
                                 <span class="d-print-inline mt-0 mb-0 text-nowrap">@allergen.Letter </span>
                             }
                         </p>
-
 
                         <button class="btn btn-warning mb-0 mt-2 @IsDisabled" @onclick="() => NavEdit(dish.Id)">Bearbeiten</button>
                         <button class="btn btn-danger mb-0 mt-2 @IsDisabled" @onclick="() => DeleteDish(dish.Id)">Löschen</button>
@@ -113,6 +113,7 @@
 @code {
     private List<DishDto>? Dishes { get; set; }
     public PageMetaData MetaData { get; set; } = new PageMetaData() { CurrentPage = 1, PageSize = 2 };
+
     private string? ImageString;
     private bool isAdmin;
     public string IsDisabled
@@ -126,6 +127,8 @@
         }
     }
 
+    private HubConnection? ChatHub;
+
 
     protected override async void OnInitialized()
     {
@@ -134,8 +137,18 @@
             isAdmin = true;
 
         await GetDishesPage(MetaData.CurrentPage);
-        //Dishes = await Http.GetFromJsonAsync<List<DishDto>>("/data/dishes/all") ?? new List<DishDto>();
-        //StateHasChanged();
+
+        //Hub-Stuff
+        ChatHub = new HubConnectionBuilder()
+          .WithUrl(NavManager.ToAbsoluteUri("/notification"))
+          .Build();
+
+        ChatHub.On<int>("NewDishNotification", async (dishId) => 
+        {
+            await AddDishById(dishId);
+        });
+
+        await ChatHub.StartAsync();
     }
 
     public async Task GetDishesPage(int page)
@@ -156,6 +169,16 @@
         Dishes = JsonConvert.DeserializeObject<List<DishDto>>(responseString);
         MetaData = JsonConvert.DeserializeObject<PageMetaData>(response.Headers.GetValues("Page-Metadata").First());
         StateHasChanged();
+    }
+
+    public async Task AddDishById(int dishId)
+    {
+        var newDish = await Http.GetFromJsonAsync<DishDto>($"/data/dishes/{dishId}");
+        if (newDish != null)
+        {
+            Dishes.Add(newDish);
+            StateHasChanged();
+        }   
     }
 
     public async void DeleteDish(int id)

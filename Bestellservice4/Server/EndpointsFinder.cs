@@ -5,6 +5,7 @@ using Bestellservice4.Server.Endpoints;
 
 namespace Bestellservice4.Server
 {
+    [Obsolete]
     public static class EndpointsFinder
     {
         public static void AddEndpointDefinitions(this IServiceCollection services, params Type[] scanMarkers)
